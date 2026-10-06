@@ -1,0 +1,14 @@
+# Data handling
+pandas==3.0.6
+numpy==2.4.6
+pyarrow==25.0.1  # parquet engine used by pd.read_parquet
+
+# Plotting
+matplotlib==3.11.2
+seaborn==0.13.2
+
+# Config (loads DATA from .env)
+python-dotenv==1.2.4
+
+# Jupyter kernel for running eda.ipynb
+ipykernel==7.4.0
