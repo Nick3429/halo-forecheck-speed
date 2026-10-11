@@ -153,3 +153,32 @@ def summarise_forecheckers (df: pd.DataFrame) -> pd.DataFrame:
         'f1_f2_distance_gap': np.hypot(f1['tracking_x'] - f2['tracking_x'], f1['tracking_y'] - f2['tracking_y']),
     })
     return summary.reset_index()
+
+
+def summarise_retrievers (df: pd.DataFrame) -> pd.DataFrame:
+    """One row per event with R1 (closest retrieving-team player) and R2 features. R2 features are missing when only one was tracked.
+
+    Requires is_retriever and distance_rank.
+    """
+    retrievers = df[df['is_retriever']]
+    r1 = _nth_closest(retrievers, 1)
+    r2 = _nth_closest(retrievers, 2)
+
+    summary = pd.DataFrame({
+        'retriever1_distance_to_event': r1['distance_to_event'],
+        'retriever1_speed': r1['player_speed'],
+        'retriever1_speed_toward_event': r1['speed_toward_event'],
+        'retriever2_distance_to_event': r2['distance_to_event'],
+        'retriever2_speed': r2['player_speed'],
+        'retriever_support_distance': np.hypot(r1['tracking_x'] - r2['tracking_x'], r1['tracking_y'] - r2['tracking_y']),
+    })
+    return summary.reset_index()
+
+
+def combine_event_summaries (event_info: pd.DataFrame, forecheckers: pd.DataFrame, retrievers: pd.DataFrame) -> pd.DataFrame:
+    """Left join the forechecker and retriever summaries onto the event info, so events missing one side keep their row."""
+    return (
+        event_info
+        .merge(forecheckers, on=EVENT_KEYS, how='left')
+        .merge(retrievers, on=EVENT_KEYS, how='left')
+    )
