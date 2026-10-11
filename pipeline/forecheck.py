@@ -93,3 +93,10 @@ def remove_goalies (df: pd.DataFrame) -> pd.DataFrame:
     is_goalie = df['primary_position'] == 'G'
     retriever_in_crease = df['is_retriever'] & (_in_box(df, LEFT_CREASE) | _in_box(df, RIGHT_CREASE))
     return df[~is_goalie & ~retriever_in_crease]
+
+def remove_tracking_glitches (df: pd.DataFrame) -> pd.DataFrame:
+    """Drop rows with an impossible speed.
+
+    Requires player_speed.
+    """
+    return df[df['player_speed'] < MAX_PLAYER_SPEED]
