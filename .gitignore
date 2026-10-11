@@ -1,15 +1,37 @@
+# Python
 env/
-events.parquet
-games.parquet
-players.parquet
-stints.parquet
-tracking.parquet
-.env
-test.ipynb
+.venv/
+venv/
 __pycache__/
 *.pyc
-.ipynb_checkpoints/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Secrets (keep a committed .env.example if one is added)
+.env
+.env.*
+!.env.example
+
+# Raw data
+*.parquet
+
+# DuckDB database built by backend/pipeline/build.py
 *.duckdb
 *.duckdb.tmp
 *.duckdb.wal
 
+# Notebooks
+test.ipynb
+.ipynb_checkpoints/
+
+# Frontend
+node_modules/
+dist/
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.log
