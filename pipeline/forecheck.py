@@ -113,3 +113,43 @@ def add_distance_rank (df: pd.DataFrame) -> pd.DataFrame:
 def _nth_closest (role_df: pd.DataFrame, n: int) -> pd.DataFrame:
     """The nth closest player of one role per event, indexed by EVENT_KEYS."""
     return role_df[role_df['distance_rank'] == n].set_index(EVENT_KEYS)
+
+def summarise_event_info (df: pd.DataFrame) -> pd.DataFrame:
+    """One row per event with its location, outcome and flags."""
+    return (
+        df.groupby(EVENT_KEYS, as_index=False)[['x', 'y', 'outcome', 'flags']]
+        .first()
+        .rename(columns={'x': 'event_x', 'y': 'event_y'})
+    )
+
+
+def summarise_forecheckers (df: pd.DataFrame) -> pd.DataFrame:
+    """One row per event with F1-F3 features and the shape of the forecheck. F2/F3 features are missing when fewer players were tracked.
+
+    Requires is_forechecker and distance_rank.
+    """
+    forecheckers = df[df['is_forechecker']]
+    f1 = _nth_closest(forecheckers, 1)
+    f2 = _nth_closest(forecheckers, 2)
+    f3 = _nth_closest(forecheckers, 3)
+    by_event = forecheckers.groupby(EVENT_KEYS)
+
+    # Column names follow the R output, including its mix of `toward_event` and `to_event`
+    summary = pd.DataFrame({
+        'f1_distance_to_event': f1['distance_to_event'],
+        'f1_speed': f1['player_speed'],
+        'f1_speed_toward_event': f1['speed_toward_event'],
+        'f1_player_id': f1['player_id_tracking'],
+        'f2_distance_to_event': f2['distance_to_event'],
+        'f2_speed': f2['player_speed'],
+        'f2_speed_to_event': f2['speed_toward_event'],
+        'f3_distance_to_event': f3['distance_to_event'],
+        'f3_speed': f3['player_speed'],
+        'f3_speed_to_event': f3['speed_toward_event'],
+        'forechecker_x_centroid': by_event['tracking_x'].mean(),
+        'forechecker_y_centroid': by_event['tracking_y'].mean(),
+        'forechecker_spread': by_event['distance_to_event'].std(),
+        'f1_f2_depth_gap': (f1['tracking_x'] - f2['tracking_x']).abs(),
+        'f1_f2_distance_gap': np.hypot(f1['tracking_x'] - f2['tracking_x'], f1['tracking_y'] - f2['tracking_y']),
+    })
+    return summary.reset_index()
