@@ -4,8 +4,9 @@ Run from the project root, after building the database with python -m backend.pi
     uvicorn backend.app.main:app --reload
 
 Interactive API docs are then at http://localhost:8000/docs.
-Set HALO_CORS_ORIGINS (comma-separated) to change which frontend origins may call the API;
-it defaults to the Vite dev server.
+By default any local frontend may call the API (localhost or 127.0.0.1 on any port), since the
+Vite dev server moves to 5174, 5175, ... when 5173 is taken. Set HALO_CORS_ORIGINS (comma-separated)
+to allow only specific origins instead, e.g. for a deployed frontend.
 """
 import os
 from contextlib import asynccontextmanager
@@ -18,7 +19,8 @@ from .db import close_connection, fetch_all, get_cursor, open_connection
 from .routers import forecheck, players, sprints
 from .schemas import Health
 
-CORS_ORIGINS = os.getenv("HALO_CORS_ORIGINS", "http://localhost:5173").split(",")
+CORS_ORIGINS = [o.strip() for o in os.getenv("HALO_CORS_ORIGINS", "").split(",") if o.strip()]
+LOCAL_ORIGIN_REGEX = r"http://(localhost|127\.0\.0\.1)(:\d+)?"
 
 
 @asynccontextmanager
@@ -37,6 +39,7 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=CORS_ORIGINS,
+    allow_origin_regex=None if CORS_ORIGINS else LOCAL_ORIGIN_REGEX,
     allow_methods=["GET"],
     allow_headers=["*"],
 )

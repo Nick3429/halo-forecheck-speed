@@ -16,7 +16,7 @@ def sprint_leaderboard(
         "sprints_22_plus_mph", "sprints_20_22_mph", "sprints_18_20_mph", "sprints_total"
     ] = "sprints_22_plus_mph",
     position: str | None = Query(None, description="Filter by primary_position, e.g. C, LW, RW, F, D"),
-    limit: int = Query(50, ge=1, le=500),
+    limit: int = Query(50, ge=1, le=1000),
     offset: int = Query(0, ge=0),
     cursor: duckdb.DuckDBPyConnection = Depends(get_cursor),
 ):
