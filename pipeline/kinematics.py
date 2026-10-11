@@ -23,3 +23,14 @@ MAX_PLAUSIBLE_SPEED = 37.0  # ft/s
 # strict max is fragile to a single noisy reading that survives the cap above.
 # Using a high percentile instead makes it robust to one-off spikes.
 TOP_SPEED_PERCENTILE = 0.99
+
+def tag_with_puck(tracking: pd.DataFrame, events: pd.DataFrame) -> pd.DataFrame:
+    ev_actor = events[["game_id", "sl_event_id", "player_id", "event_type"]].rename(
+        columns={"player_id": "event_player_id"}
+    )
+    merged = tracking.merge(ev_actor, on=["game_id", "sl_event_id"], how="left")
+    with_puck = (merged["player_id"] == merged["event_player_id"]) & merged[
+        "event_type"
+    ].isin(PUCK_HANDLING_EVENT_TYPES)
+    merged["with_puck"] = with_puck.fillna(False)
+    return merged.drop(columns=["event_player_id", "event_type"])
