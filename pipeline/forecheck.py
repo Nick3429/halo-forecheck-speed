@@ -192,6 +192,10 @@ def add_comparison_features (df: pd.DataFrame) -> pd.DataFrame:
         f1_vs_f2_speed=df['f1_speed'] - df['f2_speed']
     )
 
+def _indicator (series: pd.Series, value: str) -> pd.Series:
+    """1.0 where series equals value, 0.0 where it doesn't, and missing where series is missing."""
+    return (series == value).astype(float).where(series.notna())
+
 def encode_outcome_and_flags (df: pd.DataFrame) -> pd.DataFrame:
     """Replace outcome and flags with 0/1 columns.
 
@@ -201,3 +205,35 @@ def encode_outcome_and_flags (df: pd.DataFrame) -> pd.DataFrame:
         outcome_successful_forecheck=_indicator(df['outcome'], 'failed'),
         flag_alongboards=_indicator(df['flags'], 'alongboards')
     ).drop(columns=['outcome', 'flags'])
+
+def filter_min_f1_opportunities (df: pd.DataFrame, min_opportunities: int = 10) -> pd.DataFrame:
+    """Keep events whose F1 was F1 in at least min_opportunities events.
+
+    Like the R code, events with an unknown F1 count as one group and are kept if that group is big enough.
+    """
+    counts = df['f1_player_id'].value_counts(dropna=False)
+    players_to_keep = counts[counts >= min_opportunities].index
+    return df[df['f1_player_id'].isin(players_to_keep)]
+
+
+def build_forecheck_dataset (events_df: pd.DataFrame, tracking_df: pd.DataFrame, players_df: pd.DataFrame,
+                             min_opportunities: int = 10) -> pd.DataFrame:
+    """Run the full pipeline: one row per forecheck with F1-F3, retriever and comparison features."""
+    players = join_tracking(extract_forecheck_events(events_df), tracking_df)
+    players = join_player_positions(players, players_df)
+    players = add_distance_to_event(players)
+    players = add_player_speed(players)
+    players = add_speed_toward_event(players)
+    players = add_team_roles(players)
+    players = remove_goalies(players)
+    players = remove_tracking_glitches(players)
+    players = add_distance_rank(players)
+
+    events = combine_event_summaries(
+        summarise_event_info(players),
+        summarise_forecheckers(players),
+        summarise_retrievers(players)
+    )
+    events = add_comparison_features(events)
+    events = encode_outcome_and_flags(events)
+    return filter_min_f1_opportunities(events, min_opportunities)
