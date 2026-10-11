@@ -77,3 +77,19 @@ def add_team_roles (df: pd.DataFrame) -> pd.DataFrame:
         is_forechecker=df['team_id_event'] != df['team_id_tracking'],
         is_retriever=df['team_id_event'] == df['team_id_tracking']
     )
+
+def _in_box (df: pd.DataFrame, box: dict) -> pd.Series:
+    return (
+        df['tracking_x'].between(box['x_min'], box['x_max']) &
+        df['tracking_y'].between(box['y_min'], box['y_max'])
+    )
+
+
+def remove_goalies (df: pd.DataFrame) -> pd.DataFrame:
+    """Drop known goalies, plus any retrieving-team player standing in either crease box (catches goalies with no position).
+
+    Requires is_retriever.
+    """
+    is_goalie = df['primary_position'] == 'G'
+    retriever_in_crease = df['is_retriever'] & (_in_box(df, LEFT_CREASE) | _in_box(df, RIGHT_CREASE))
+    return df[~is_goalie & ~retriever_in_crease]
