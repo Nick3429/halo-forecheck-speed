@@ -134,7 +134,7 @@ def summarise_forecheckers (df: pd.DataFrame) -> pd.DataFrame:
     f3 = _nth_closest(forecheckers, 3)
     by_event = forecheckers.groupby(EVENT_KEYS)
 
-    # Column names follow the R output, including its mix of `toward_event` and `to_event`
+    # Note: the F1 column uses `toward_event` while the F2/F3 columns use `to_event`
     summary = pd.DataFrame({
         'f1_distance_to_event': f1['distance_to_event'],
         'f1_speed': f1['player_speed'],
@@ -208,8 +208,6 @@ def encode_outcome_and_flags (df: pd.DataFrame) -> pd.DataFrame:
 
 def filter_min_f1_opportunities (df: pd.DataFrame, min_opportunities: int = 10) -> pd.DataFrame:
     """Keep events whose F1 was F1 in at least min_opportunities events.
-
-    Like the R code, events with an unknown F1 count as one group and are kept if that group is big enough.
     """
     counts = df['f1_player_id'].value_counts(dropna=False)
     players_to_keep = counts[counts >= min_opportunities].index
