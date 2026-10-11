@@ -34,3 +34,9 @@ def tag_with_puck(tracking: pd.DataFrame, events: pd.DataFrame) -> pd.DataFrame:
     ].isin(PUCK_HANDLING_EVENT_TYPES)
     merged["with_puck"] = with_puck.fillna(False)
     return merged.drop(columns=["event_player_id", "event_type"])
+
+def compute_speed(tracking: pd.DataFrame) -> pd.DataFrame:
+    tracking = tracking.copy()
+    speed = np.hypot(tracking["tracking_vel_x"], tracking["tracking_vel_y"])
+    tracking["speed"] = speed.where(speed <= MAX_PLAUSIBLE_SPEED)
+    return tracking
