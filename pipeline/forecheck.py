@@ -100,3 +100,16 @@ def remove_tracking_glitches (df: pd.DataFrame) -> pd.DataFrame:
     Requires player_speed.
     """
     return df[df['player_speed'] < MAX_PLAYER_SPEED]
+
+def add_distance_rank (df: pd.DataFrame) -> pd.DataFrame:
+    """Add distance_rank: 1 for the closest player to the puck on their team in that event, 2 for the next closest, etc.
+
+    Ties keep the earlier row first. Requires distance_to_event and is_forechecker.
+    """
+    rank = df.groupby(EVENT_KEYS + ['is_forechecker'])['distance_to_event'].rank(method='first')
+    return df.assign(distance_rank=rank)
+
+
+def _nth_closest (role_df: pd.DataFrame, n: int) -> pd.DataFrame:
+    """The nth closest player of one role per event, indexed by EVENT_KEYS."""
+    return role_df[role_df['distance_rank'] == n].set_index(EVENT_KEYS)
