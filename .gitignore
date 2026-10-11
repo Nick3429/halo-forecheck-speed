@@ -9,4 +9,7 @@ test.ipynb
 __pycache__/
 *.pyc
 .ipynb_checkpoints/
+*.duckdb
+*.duckdb.tmp
+*.duckdb.wal
 
