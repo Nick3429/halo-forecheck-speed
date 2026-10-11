@@ -182,3 +182,12 @@ def combine_event_summaries (event_info: pd.DataFrame, forecheckers: pd.DataFram
         .merge(forecheckers, on=EVENT_KEYS, how='left')
         .merge(retrievers, on=EVENT_KEYS, how='left')
     )
+
+def add_comparison_features (df: pd.DataFrame) -> pd.DataFrame:
+    """Add features comparing F1 with R1 and with F2."""
+    return df.assign(
+        f1_to_r1_distance_ratio=df['f1_distance_to_event'] / df['retriever1_distance_to_event'],
+        f1_to_r1_speed_ratio=df['f1_speed'] / df['retriever1_speed'],
+        r1_to_f1_distance=df['retriever1_distance_to_event'] - df['f1_distance_to_event'],
+        f1_vs_f2_speed=df['f1_speed'] - df['f2_speed']
+    )
