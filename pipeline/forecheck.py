@@ -24,3 +24,15 @@ def extract_forecheck_events (events_df: pd.DataFrame) -> pd.DataFrame:
         (events_df['has_tracking_data'] == 1)
     ]
     return forecheck_only
+
+def join_tracking (forecheck_df: pd.DataFrame, tracking_df: pd.DataFrame) -> pd.DataFrame:
+    """Left join the tracking data onto the forecheck events on game_id and sl_event_id. Every forecheck event is kept and is repeated once per tracked player, giving one row per tracked player per event.
+
+    Columns in both tables (team_id, player_id, player_name) get the suffix `_event` for the retriever logged on the event, and `_tracking` for the tracked player on that row.
+    """
+    return forecheck_df.merge(
+        tracking_df,
+        on=['game_id', 'sl_event_id'],
+        how='left',
+        suffixes=('_event', '_tracking')
+    )
