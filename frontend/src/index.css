@@ -1,0 +1,296 @@
+@import "tailwindcss";
+
+/* Design tokens, taken from the personal site: black page, #242424 cards, white ink, nav accents */
+@theme {
+  --font-sans: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  --color-page: #000000;
+  --color-card: #242424;
+  --color-ink: #ffffff;
+  --color-ink-2: rgba(255, 255, 255, 0.7);
+  --color-ink-3: rgba(255, 255, 255, 0.5);
+  --color-hairline: rgba(255, 255, 255, 0.1);
+  --color-grid: #333333;
+  --color-accent-forecheck: #fbb046;
+  --color-accent-sprint: #47caa4;
+  --color-accent-players: #e74c3c;
+}
+
+/* Chart colours live in src/chartTheme.ts (SVG attributes can't read CSS variables) */
+:root {
+  color-scheme: dark;
+}
+
+/* Always reserve the scrollbar's width so pages that scroll and pages that don't are the same width;
+   otherwise the centred nav shifts sideways when a taller page loads */
+html {
+  scrollbar-gutter: stable;
+}
+
+body {
+  background: var(--color-page);
+  color: var(--color-ink);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* ---------- Navbar (glass bar, centred links with a sliding underline) ---------- */
+.navbar {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1rem 0;
+  z-index: 1000;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-scrolled {
+  padding: 0.5rem 0;
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 6px 30px rgba(0, 0, 0, 0.15);
+}
+
+.logo {
+  color: var(--color-ink);
+  font-size: 1.5rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.logo:hover {
+  color: var(--color-ink-2);
+  transform: translateY(-5px);
+}
+
+.nav-link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  color: var(--color-ink-2);
+  text-decoration: none;
+  padding: 18px 12px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+}
+
+.nav-link::before {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  width: 0;
+  border-radius: 2px;
+  background-color: var(--nav-accent, rgba(255, 255, 255, 0.7));
+  transition: width 0.4s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.nav-link:not(.active):hover {
+  transform: translateY(-5px);
+}
+
+.nav-link.active::before {
+  width: 100%;
+}
+
+/* Active link takes its page accent as a background, like the site; dark text keeps it readable */
+.nav-link.active.has-accent {
+  background-color: var(--nav-accent);
+  color: #000000;
+}
+
+.nav-link.active svg {
+  transition: all 0.2s ease-in;
+  transform: scale(1.15);
+}
+
+.link-icon {
+  width: 18px;
+  height: 18px;
+  margin-right: 6px;
+  flex-shrink: 0;
+}
+
+/* ---------- Cards, buttons, pills ---------- */
+.card {
+  background: var(--color-card);
+  border-radius: 15px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s cubic-bezier(0.18, 0.9, 0.32, 1);
+}
+
+.card-hover:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 40px rgba(255, 255, 255, 0.7);
+}
+
+.pill-btn {
+  display: inline-block;
+  padding: 0.6rem 1.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--color-ink);
+  border-radius: 25px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-align: center;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.pill-btn:hover,
+.pill-btn.active {
+  background: rgba(255, 255, 255, 0.7);
+  color: #000000;
+  border-color: rgba(255, 255, 255, 0.7);
+}
+
+.pill-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(255, 255, 255, 0.3);
+}
+
+.section-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* The white bar under the hero title on the site */
+.title-rule::after {
+  content: "";
+  display: block;
+  width: 80px;
+  height: 4px;
+  background: var(--color-ink);
+  border-radius: 2px;
+  margin: 0.75rem auto 0;
+}
+
+/* ---------- Tables ---------- */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.data-table th {
+  text-align: left;
+  font-weight: 500;
+  font-size: 0.8rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--color-ink-3);
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--color-hairline);
+  white-space: nowrap;
+}
+
+.data-table td {
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid var(--color-hairline);
+  white-space: nowrap;
+}
+
+.data-table th.num,
+.data-table td.num {
+  text-align: right;
+}
+
+/* Clickable column header: looks like the other headers, brightens on hover, arrow marks the ranked column */
+.sort-header {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.sort-header:hover,
+.sort-header.active {
+  color: var(--color-ink);
+}
+
+.sort-arrow {
+  font-size: 0.6rem;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.sort-header:hover .sort-arrow {
+  opacity: 0.4;
+}
+
+.sort-header.active .sort-arrow {
+  opacity: 1;
+}
+
+.sort-header:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.7);
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+
+.data-table tbody tr {
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.data-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* ---------- Motion ---------- */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.8s ease both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fade-in-up {
+    animation: none;
+  }
+  .card-hover:hover,
+  .pill-btn:hover,
+  .nav-link:not(.active):hover,
+  .logo:hover {
+    transform: none;
+  }
+}
+
+/* Recharts: no focus box around clicked charts */
+.recharts-wrapper:focus,
+.recharts-surface:focus {
+  outline: none;
+}
