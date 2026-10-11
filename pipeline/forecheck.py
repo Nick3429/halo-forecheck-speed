@@ -235,3 +235,46 @@ def build_forecheck_dataset (events_df: pd.DataFrame, tracking_df: pd.DataFrame,
     events = add_comparison_features(events)
     events = encode_outcome_and_flags(events)
     return filter_min_f1_opportunities(events, min_opportunities)
+
+
+def count_f1_attempts_and_recoveries (forecheck_df: pd.DataFrame) -> pd.DataFrame:
+    """One row per F1 player with attempts (events they were F1 in) and recoveries (those where the forecheck succeeded).
+
+    Events with an unknown F1 are left out, since they can't be credited to a player.
+    """
+    return (
+        forecheck_df.groupby('f1_player_id')['outcome_successful_forecheck']
+        .agg(attempts='size', recoveries='sum')
+        .astype({'recoveries': int})
+        .rename_axis('player_id')
+        .reset_index()
+    )
+
+
+def add_success_rate (df: pd.DataFrame) -> pd.DataFrame:
+    """Add success_rate: recoveries divided by attempts."""
+    return df.assign(success_rate=df['recoveries'] / df['attempts'])
+
+
+def join_player_details (df: pd.DataFrame, players_df: pd.DataFrame) -> pd.DataFrame:
+    """Left join each player's name and primary_position on player_id."""
+    return df.merge(
+        players_df[['player_id', 'player_name', 'primary_position']],
+        on='player_id',
+        how='left'
+    )
+
+
+def build_f1_player_stats (forecheck_df: pd.DataFrame, players_df: pd.DataFrame) -> pd.DataFrame:
+    """One row per player with F1 forecheck attempts, recoveries and success rate, best success rate first.
+
+    Takes the event-level dataframe from build_forecheck_dataset.
+    """
+    stats = count_f1_attempts_and_recoveries(forecheck_df)
+    stats = add_success_rate(stats)
+    stats = join_player_details(stats, players_df)
+    return (
+        stats[['player_id', 'player_name', 'primary_position', 'attempts', 'recoveries', 'success_rate']]
+        .sort_values(['success_rate', 'attempts'], ascending=False)
+        .reset_index(drop=True)
+    )
