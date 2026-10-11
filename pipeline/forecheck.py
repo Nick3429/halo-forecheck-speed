@@ -36,3 +36,37 @@ def join_tracking (forecheck_df: pd.DataFrame, tracking_df: pd.DataFrame) -> pd.
         how='left',
         suffixes=('_event', '_tracking')
     )
+
+def join_player_positions (df: pd.DataFrame, players_df: pd.DataFrame) -> pd.DataFrame:
+    """Left join each tracked player's primary_position. Players without a tracked player_id get a missing position."""
+    return df.merge(
+        players_df[['player_id', 'primary_position']],
+        left_on='player_id_tracking',
+        right_on='player_id',
+        how='left'
+    ).drop(columns='player_id')
+
+def add_distance_to_event (df: pd.DataFrame) -> pd.DataFrame:
+    """Add distance_to_event: straight-line distance from the tracked player to the event (puck) location."""
+    return df.assign(
+        distance_to_event=np.hypot(df['tracking_x'] - df['x'], df['tracking_y'] - df['y'])
+    )
+
+
+def add_player_speed (df: pd.DataFrame) -> pd.DataFrame:
+    """Add player_speed: magnitude of the tracked player's velocity, in any direction."""
+    return df.assign(
+        player_speed=np.hypot(df['tracking_vel_x'], df['tracking_vel_y'])
+    )
+
+
+def add_speed_toward_event (df: pd.DataFrame) -> pd.DataFrame:
+    """Add speed_toward_event: the part of the player's velocity pointed at the puck (positive = closing in, negative = moving away).
+
+    Requires distance_to_event. The small constant avoids dividing by zero when a player is on the puck.
+    """
+    toward = (
+        df['tracking_vel_x'] * (df['x'] - df['tracking_x']) +
+        df['tracking_vel_y'] * (df['y'] - df['tracking_y'])
+    ) / (df['distance_to_event'] + 0.00001)
+    return df.assign(speed_toward_event=toward)
