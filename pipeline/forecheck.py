@@ -191,3 +191,13 @@ def add_comparison_features (df: pd.DataFrame) -> pd.DataFrame:
         r1_to_f1_distance=df['retriever1_distance_to_event'] - df['f1_distance_to_event'],
         f1_vs_f2_speed=df['f1_speed'] - df['f2_speed']
     )
+
+def encode_outcome_and_flags (df: pd.DataFrame) -> pd.DataFrame:
+    """Replace outcome and flags with 0/1 columns.
+
+    outcome_successful_forecheck is 1 when the retriever's recovery failed, since that means the forecheck worked.
+    """
+    return df.assign(
+        outcome_successful_forecheck=_indicator(df['outcome'], 'failed'),
+        flag_alongboards=_indicator(df['flags'], 'alongboards')
+    ).drop(columns=['outcome', 'flags'])
