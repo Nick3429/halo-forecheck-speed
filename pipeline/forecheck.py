@@ -70,3 +70,10 @@ def add_speed_toward_event (df: pd.DataFrame) -> pd.DataFrame:
         df['tracking_vel_y'] * (df['y'] - df['tracking_y'])
     ) / (df['distance_to_event'] + 0.00001)
     return df.assign(speed_toward_event=toward)
+
+def add_team_roles (df: pd.DataFrame) -> pd.DataFrame:
+    """Add is_forechecker / is_retriever. The event's team is the retrieving team, so anyone on the other team is forechecking."""
+    return df.assign(
+        is_forechecker=df['team_id_event'] != df['team_id_tracking'],
+        is_retriever=df['team_id_event'] == df['team_id_tracking']
+    )
